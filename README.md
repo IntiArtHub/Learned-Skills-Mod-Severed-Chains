@@ -6,7 +6,7 @@ Individual abilities can exist independently as standalone mods, but Learned Ski
 
 The framework keeps ability logic modular. Where the architecture permits, a developer can reuse or adapt an individual ability independently of the Manual and mastery presentation.
 
-## Standard installation â€” Recommended
+## Standard installation Recommended
 
 1. Download `Learned-Skills-v1.0.0.zip` from the [v1.0.0 release](https://github.com/IntiArtHub/Learned-Skills-Mod-Severed-Chains/releases/tag/v1.0.0).
 2. Copy `learned-skills-1.0.0.jar` into the Severed Chains `mods` folder.
