@@ -1,0 +1,40 @@
+# Gradle and compiled output
+.gradle/
+**/build/
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+*.zip
+*.sha256
+
+# Local Severed Chains dependencies and release staging
+.upstream/
+release/
+gradle.properties
+
+# IDE and operating-system state
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Local runtimes, logs, saves, caches, and diagnostics
+config.conf
+*.log
+logs/
+saves/
+diagnostics/
+tmp/
+temp/
+*-test-install/
+
+# Internal handoff and obsolete local test helpers
+PROJECT_STATE.md
+skill system handoff.txt
+HUMAN_TEST_CHECKLIST.md
+RC1_HUMAN_TEST_CHECKLIST.md
+TASKS.md
+NOTES.md
+deploy-beta.ps1
+launch-skill-system-debug.bat
+legacy/

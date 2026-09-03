@@ -1,0 +1,57 @@
+plugins {
+  id 'java-library'
+}
+
+group = 'skill_system'
+version = '1.0.0'
+
+java {
+  sourceCompatibility = targetCompatibility = JavaVersion.VERSION_25
+}
+
+compileJava.options.encoding = 'UTF-8'
+
+repositories {
+  mavenCentral()
+}
+
+def defaultEngineDir = file('.upstream/stock-b69c397a')
+def learnedSkillsEngineJar = providers.gradleProperty('learnedSkillsEngineJar').getOrElse(new File(defaultEngineDir, 'lod-game-b69c397a2ccb6165e12480d13523840073f08a80.jar').path)
+def learnedSkillsEngineLibDir = providers.gradleProperty('learnedSkillsEngineLibDir').getOrElse(new File(defaultEngineDir, 'libs').path)
+
+dependencies {
+  compileOnly files(learnedSkillsEngineJar)
+  compileOnly fileTree(dir: learnedSkillsEngineLibDir, include: '*.jar')
+  testImplementation files(learnedSkillsEngineJar)
+  testImplementation fileTree(dir: learnedSkillsEngineLibDir, include: '*.jar')
+  testImplementation platform('org.junit:junit-bom:5.13.4')
+  testImplementation 'org.junit.jupiter:junit-jupiter'
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+  useJUnitPlatform()
+}
+
+tasks.jar {
+  archiveBaseName = 'learned-skills'
+}
+
+tasks.register('verifyStockCompatibility') {
+  dependsOn tasks.jar
+  doLast {
+    def forbidden = [
+      'legend/game/modding/events/menu/GatherExtensionMenuEntriesEvent',
+      'legend/game/modding/events/menu/ExtensionMenuEntry',
+      'legend/game/inventory/screens/ExtensionMenuScreen'
+    ]
+    def hits = []
+    zipTree(tasks.jar.archiveFile.get().asFile).matching { include '**/*.class' }.files.each { classFile ->
+      def content = classFile.getText('ISO-8859-1')
+      forbidden.each { symbol -> if(content.contains(symbol)) hits << "${classFile.name}: ${symbol}" }
+    }
+    if(!hits.isEmpty()) throw new GradleException("Core jar links patched menu API:\n" + hits.join('\n'))
+  }
+}
+
+check.dependsOn tasks.verifyStockCompatibility

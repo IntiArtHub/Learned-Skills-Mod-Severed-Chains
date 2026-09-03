@@ -1,0 +1,34 @@
+skill_system.name=Learned Skills
+
+skill_system.equipment.steal_manual.name=Steal Manual
+skill_system.equipment.steal_manual.description=Equip to use Steal.\nConsumed when mastered.
+
+skill_system.battle_action.steal.name=Steal
+skill_system.skill.steal.name=Steal
+skill_system.skill.steal.description=Attempts to steal an enemy's held item or gold.
+skill_system.skill.steal.effect.rank_1=Success Rate ×1
+skill_system.skill.steal.effect.rank_2=Success Rate ×2
+skill_system.skill.steal.effect.rank_3=Success Rate ×3
+skill_system.skill.steal.effect.rank_4=Success Rate ×4
+skill_system.skill.steal.effect.boss=Boss Steal enabled
+
+skill_system.message.already_learned=Already Learned
+skill_system.message.nothing_to_steal=Nothing to steal
+skill_system.message.failed_to_steal=Failed to steal
+skill_system.message.items_full=Items full!
+skill_system.message.stole=Stole %s!
+skill_system.message.cant_steal_boss=Can't steal from boss!
+skill_system.message.steal_level_2=%s's Steal reached Lv. 2!
+skill_system.message.steal_level_3=%s's Steal reached Lv. 3!
+skill_system.message.steal_mastered=%s mastered Steal!
+skill_system.message.manual_consumed=Steal Manual Consumed
+
+skill_system.ui.skills=Skills
+skill_system.ui.learning_now=Learning now
+skill_system.ui.not_learning=Not learning
+skill_system.ui.mastered=MASTERED
+skill_system.ui.no_skills=No skill mastery yet.
+skill_system.ui.mastery=Mastery
+skill_system.ui.effect=Skill Effect
+skill_system.ui.description=Description
+skill_system.ui.back=Back

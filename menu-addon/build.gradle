@@ -1,0 +1,41 @@
+plugins {
+  id 'java-library'
+}
+
+group = 'skill_system'
+version = '1.0.0'
+
+java {
+  sourceCompatibility = targetCompatibility = JavaVersion.VERSION_25
+}
+
+compileJava.options.encoding = 'UTF-8'
+
+def defaultPatchedEngine = rootProject.file('build/patched-engine/lod-game-b69c397a2ccb6165e12480d13523840073f08a80.jar')
+def patchedEngineJar = providers.gradleProperty('menuAddonEngineJar').getOrElse(defaultPatchedEngine.path)
+def learnedSkillsEngineLibDir = providers.gradleProperty('learnedSkillsEngineLibDir').getOrElse(rootProject.file('.upstream/stock-b69c397a/libs').path)
+
+dependencies {
+  compileOnly files(patchedEngineJar)
+  compileOnly fileTree(dir: learnedSkillsEngineLibDir, include: '*.jar')
+}
+
+tasks.jar {
+  archiveBaseName = 'learned-skills-menu-addon'
+}
+
+tasks.register('verifyIsolatedAddon') {
+  dependsOn tasks.jar
+  doLast {
+    def archive = tasks.jar.archiveFile.get().asFile
+    def classBytes = zipTree(archive).matching { include '**/*.class' }.files.collect { it.getText('ISO-8859-1') }.join('\n')
+    def forbidden = ['skill/system/SkillSystemMod', 'skill/system/menu/SkillsScreen']
+    def hits = forbidden.findAll { classBytes.contains(it) }
+    if(!hits.isEmpty()) throw new GradleException("Menu addon has direct core linkage: ${hits.join(', ')}")
+    if(zipTree(archive).matching { include 'learned_skills_menu_addon/lang/en.lang' }.files.empty) {
+      throw new GradleException('Menu addon display-name translation is missing')
+    }
+  }
+}
+
+check.dependsOn tasks.verifyIsolatedAddon

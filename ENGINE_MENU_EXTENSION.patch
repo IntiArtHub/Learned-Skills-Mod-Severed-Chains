@@ -1,0 +1,406 @@
+diff --git a/build.gradle b/build.gradle
+index 9970ee222..e0296c58a 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -291,6 +291,13 @@ test {
+   exclude '**/*'
+ }
+ 
++tasks.register('menuExtensionTest', Test) {
++  useJUnitPlatform()
++  testClassesDirs = sourceSets.test.output.classesDirs
++  classpath = sourceSets.test.runtimeClasspath
++  include '**/ExtensionMenuTest.class'
++}
++
+ sourceSets {
+   main {
+     java {
+diff --git a/src/main/java/legend/core/Version.java b/src/main/java/legend/core/Version.java
+index b4813347e..7c6aae5e6 100644
+--- a/src/main/java/legend/core/Version.java
++++ b/src/main/java/legend/core/Version.java
+@@ -9,15 +9,15 @@ public final class Version {
+   public static final String MAJOR = "3";
+   public static final String MINOR = "0";
+   public static final String REVISION = "0";
+-  public static final String BUILD = "SNAPSHOT";
+-  public static final String HASH = "COMMIT";
+-  public static final String CHANNEL = "CHANNEL";
++  public static final String BUILD = "1739";
++  public static final String HASH = "b69c397a2ccb6165e12480d13523840073f08a80";
++  public static final String CHANNEL = "devbuild";
+   public static final String VERSION = MAJOR + '.' + MINOR + '.' + REVISION;
+   public static final String FULL_VERSION = VERSION + '-' + BUILD + '-' + CHANNEL;
+-  public static final ZonedDateTime TIMESTAMP = null;
++  public static final ZonedDateTime TIMESTAMP = ZonedDateTime.parse("2026-09-01T23:37:43+00:00");
+ 
+   public static boolean isMac() {
+     final String os = System.getProperty("os.name").toLowerCase(Locale.US);
+     return os.contains("mac os x") || os.contains("darwin") || os.contains("osx");
+   }
+-}
++}
+\ No newline at end of file
+diff --git a/src/main/java/legend/game/inventory/screens/ExtensionMenuScreen.java b/src/main/java/legend/game/inventory/screens/ExtensionMenuScreen.java
+new file mode 100644
+index 000000000..e1ee89d52
+--- /dev/null
++++ b/src/main/java/legend/game/inventory/screens/ExtensionMenuScreen.java
+@@ -0,0 +1,86 @@
++package legend.game.inventory.screens;
++
++import legend.core.lang.I18nText;
++import legend.core.platform.input.InputAction;
++import legend.game.inventory.screens.controls.Background;
++import legend.game.inventory.screens.controls.Label;
++import legend.game.inventory.screens.controls.ListBox;
++import legend.game.inventory.screens.controls.Panel;
++import legend.game.modding.events.menu.ExtensionMenuEntry;
++
++import java.util.List;
++
++import static legend.game.Menus.deallocateRenderables;
++import static legend.game.modding.coremod.CoreMod.INPUT_ACTION_MENU_BACK;
++import static legend.game.sound.Audio.playMenuSound;
++
++/** Native generic submenu for mod-contributed Main Menu destinations. */
++public final class ExtensionMenuScreen extends MenuScreen {
++  static final int VISIBLE_ROWS = 7;
++
++  private final Runnable unload;
++  private boolean initialized;
++  private final ListBox<ExtensionMenuEntry> entries;
++
++  public ExtensionMenuScreen(final List<ExtensionMenuEntry> entries, final Runnable unload) {
++    this.unload = unload;
++
++    this.addControl(new Background());
++    final Panel panel = this.addControl(Panel.panel());
++    panel.setPos(80, 24);
++    panel.setSize(208, 166);
++
++    final Label title = this.addControl(new Label(new I18nText("lod_core.ui.extension_menu.title")));
++    title.setPos(90, 35);
++    title.setSize(188, 14);
++    title.getFontOptions().horizontalAlign(HorizontalAlign.CENTRE);
++
++    this.entries = this.addControl(new ListBox<>(entry -> entry.name().get(), null, null, null, null));
++    this.entries.setPos(90, 55);
++    this.entries.setSize(188, VISIBLE_ROWS * 17);
++    entries.forEach(this.entries::add);
++    this.entries.onSelection(this::open);
++    this.setFocus(this.entries);
++
++    this.addHotkey(new I18nText("lod_core.ui.extension_menu.back"), INPUT_ACTION_MENU_BACK, this::back);
++  }
++
++  static MenuScreen createScreen(final ExtensionMenuEntry entry, final Runnable unload) {
++    return entry.screenFactory().apply(unload);
++  }
++
++  private void open(final ExtensionMenuEntry entry) {
++    playMenuSound(2);
++    this.getStack().pushScreen(createScreen(entry, () -> this.getStack().popScreen()));
++  }
++
++  private void back() {
++    playMenuSound(3);
++    this.unload.run();
++  }
++
++  @Override
++  protected void render() {
++    if(!this.initialized) {
++      // MainMenuScreen leaves its legacy timestamp separator glyphs allocated.
++      // Clear those before drawing the extension screen so they cannot bleed through.
++      deallocateRenderables(0xff);
++      deallocateRenderables(0);
++      this.initialized = true;
++    }
++  }
++
++  @Override
++  protected InputPropagation inputActionPressed(final InputAction action, final boolean repeat) {
++    if(super.inputActionPressed(action, repeat) == InputPropagation.HANDLED) {
++      return InputPropagation.HANDLED;
++    }
++
++    if(action == INPUT_ACTION_MENU_BACK.get() && !repeat) {
++      this.back();
++      return InputPropagation.HANDLED;
++    }
++
++    return InputPropagation.PROPAGATE;
++  }
++}
+diff --git a/src/main/java/legend/game/inventory/screens/MainMenuScreen.java b/src/main/java/legend/game/inventory/screens/MainMenuScreen.java
+index a26f65b7c..89168ba40 100644
+--- a/src/main/java/legend/game/inventory/screens/MainMenuScreen.java
++++ b/src/main/java/legend/game/inventory/screens/MainMenuScreen.java
+@@ -11,6 +11,8 @@ import legend.game.inventory.screens.controls.Button;
+ import legend.game.inventory.screens.controls.CharacterCard;
+ import legend.game.inventory.screens.controls.DragoonSpirits;
+ import legend.game.inventory.screens.controls.Glyph;
++import legend.game.modding.events.menu.ExtensionMenuEntry;
++import legend.game.modding.events.menu.GatherExtensionMenuEntriesEvent;
+ import legend.game.saves.ConfigStorage;
+ import legend.game.saves.ConfigStorageLocation;
+ import legend.game.types.MessageBoxResult;
+@@ -27,6 +29,7 @@ import java.util.List;
+ import java.util.function.Function;
+ 
+ import static legend.core.GameEngine.CONFIG;
++import static legend.core.GameEngine.EVENTS;
+ import static legend.core.GameEngine.RENDERER;
+ import static legend.core.GameEngine.SAVES;
+ import static legend.game.EngineStates.currentEngineState_8004dd04;
+@@ -63,8 +66,14 @@ import static legend.game.modding.coremod.CoreMod.INPUT_ACTION_MENU_UP;
+ import static legend.game.sound.Audio.playMenuSound;
+ 
+ public class MainMenuScreen extends MenuScreen {
++  static final int RETAIL_BUTTON_COUNT = 14;
++  static final int BUTTONS_PER_COLUMN = 7;
++  static final int FIRST_BLANK_INDEX = 5;
++  static final int EXTENSION_MENU_INDEX = 11;
++
+   private int loadingStage;
+   private final Runnable unload;
++  private final List<ExtensionMenuEntry> extensionMenuEntries;
+ 
+   private final CharacterCard[] charCards = new CharacterCard[3];
+   private final List<Button> menuButtons = new ArrayList<>();
+@@ -88,6 +97,8 @@ public class MainMenuScreen extends MenuScreen {
+ 
+     loadingNewGameState_800bdc34 = false;
+ 
++    this.extensionMenuEntries = EVENTS.postEvent(new GatherExtensionMenuEntriesEvent()).getEntries();
++
+     this.addControl(new Background());
+     this.addControl(Glyph.glyph(71)).setPos( 16,  16); // Chapter box
+     this.addControl(Glyph.glyph(72)).setPos( 18,  60); // Menu box
+@@ -113,7 +124,11 @@ public class MainMenuScreen extends MenuScreen {
+     this.addButton(new I18nText("lod_core.ui.ingame_menu.additions"), this::showAdditionsScreen);
+     this.addButton(new I18nText("lod_core.ui.ingame_menu.replace"), this::showCharSwapScreen);
+     this.addButton(new I18nText("lod_core.ui.ingame_menu.options"), this::showOptionsScreen);
+-    this.addButton(RawText.BLANK, () -> { }).hide();
++    if(shouldShowMore(this.extensionMenuEntries)) {
++      this.addButton(new I18nText("lod_core.ui.ingame_menu.more"), this::showExtensionMenu);
++    } else {
++      this.addButton(RawText.BLANK, () -> { }).hide();
++    }
+     this.loadButton = this.addButton(new I18nText("lod_core.ui.ingame_menu.load"), this::showLoadScreen);
+     this.saveButton = this.addButton(new I18nText("lod_core.ui.ingame_menu.save"), this::showSaveScreen);
+ 
+@@ -135,6 +150,10 @@ public class MainMenuScreen extends MenuScreen {
+     this.downArrow.setVisibility(gameState_800babc8.charIds_88.size() > this.charCards.length);
+     this.downArrow.setPos(this.charCards[this.charCards.length - 1].getX() + this.charCards[this.charCards.length - 1].getWidth() - 1, this.charCards[this.charCards.length - 1].getY() + this.charCards[this.charCards.length - 1].getHeight() - 18);
+ 
++    if(this.menuButtons.size() != RETAIL_BUTTON_COUNT) {
++      throw new IllegalStateException("Main Menu button layout must retain " + RETAIL_BUTTON_COUNT + " positions");
++    }
++
+     this.setFocus(this.menuButtons.getFirst());
+   }
+ 
+@@ -142,7 +161,7 @@ public class MainMenuScreen extends MenuScreen {
+     final int index = this.menuButtons.size();
+ 
+     final Button button = this.addControl(new Button(text));
+-    button.setPos(21 + index / 7 * 74, 79 + (index % 7) * 13);
++    button.setPos(21 + index / BUTTONS_PER_COLUMN * 74, 79 + (index % BUTTONS_PER_COLUMN) * 13);
+     button.setWidth(72);
+ 
+     button.onHoverIn(button::focus);
+@@ -513,6 +532,14 @@ public class MainMenuScreen extends MenuScreen {
+     }
+   }
+ 
++  static boolean shouldShowMore(final List<ExtensionMenuEntry> entries) {
++    return !entries.isEmpty();
++  }
++
++  private ExtensionMenuScreen showExtensionMenu() {
++    return this.showScreen(unload -> new ExtensionMenuScreen(this.extensionMenuEntries, unload));
++  }
++
+   private StatusScreen showStatusScreen() {
+     return this.showScreen(StatusScreen::new);
+   }
+diff --git a/src/main/java/legend/game/modding/events/menu/ExtensionMenuEntry.java b/src/main/java/legend/game/modding/events/menu/ExtensionMenuEntry.java
+new file mode 100644
+index 000000000..850ef0feb
+--- /dev/null
++++ b/src/main/java/legend/game/modding/events/menu/ExtensionMenuEntry.java
+@@ -0,0 +1,22 @@
++package legend.game.modding.events.menu;
++
++import legend.core.lang.TextComponent;
++import legend.game.inventory.screens.MenuScreen;
++import org.legendofdragoon.modloader.registries.RegistryId;
++
++import java.util.Objects;
++import java.util.function.Function;
++
++/** A mod-contributed entry displayed in the generic More menu. */
++public record ExtensionMenuEntry(
++  RegistryId id,
++  TextComponent name,
++  int order,
++  Function<Runnable, ? extends MenuScreen> screenFactory
++) {
++  public ExtensionMenuEntry {
++    Objects.requireNonNull(id, "id");
++    Objects.requireNonNull(name, "name");
++    Objects.requireNonNull(screenFactory, "screenFactory");
++  }
++}
+diff --git a/src/main/java/legend/game/modding/events/menu/GatherExtensionMenuEntriesEvent.java b/src/main/java/legend/game/modding/events/menu/GatherExtensionMenuEntriesEvent.java
+new file mode 100644
+index 000000000..8193ad100
+--- /dev/null
++++ b/src/main/java/legend/game/modding/events/menu/GatherExtensionMenuEntriesEvent.java
+@@ -0,0 +1,30 @@
++package legend.game.modding.events.menu;
++
++import org.legendofdragoon.modloader.events.Event;
++import org.legendofdragoon.modloader.registries.RegistryId;
++
++import java.util.Comparator;
++import java.util.LinkedHashMap;
++import java.util.List;
++import java.util.Map;
++
++/** Fired while the Main Menu gathers mod-contributed entries for its More submenu. */
++public final class GatherExtensionMenuEntriesEvent extends Event {
++  private static final Comparator<ExtensionMenuEntry> ORDER = Comparator
++    .comparingInt(ExtensionMenuEntry::order)
++    .thenComparing(entry -> entry.id().toString());
++
++  private final Map<RegistryId, ExtensionMenuEntry> entries = new LinkedHashMap<>();
++
++  /** Rejects duplicate stable IDs so the menu cannot contain ambiguous entries. */
++  public void add(final ExtensionMenuEntry entry) {
++    if(this.entries.putIfAbsent(entry.id(), entry) != null) {
++      throw new IllegalArgumentException("Duplicate extension menu entry ID " + entry.id());
++    }
++  }
++
++  /** Returns an immutable deterministic snapshot ordered by order, then ID. */
++  public List<ExtensionMenuEntry> getEntries() {
++    return this.entries.values().stream().sorted(ORDER).toList();
++  }
++}
+diff --git a/src/main/java/legend/game/modding/events/menu/package-info.java b/src/main/java/legend/game/modding/events/menu/package-info.java
+new file mode 100644
+index 000000000..4bfe98b8e
+--- /dev/null
++++ b/src/main/java/legend/game/modding/events/menu/package-info.java
+@@ -0,0 +1,4 @@
++@ParametersAreNonnullByDefault
++package legend.game.modding.events.menu;
++
++import javax.annotation.ParametersAreNonnullByDefault;
+diff --git a/src/main/resources/lod_core/lang/en.lang b/src/main/resources/lod_core/lang/en.lang
+index 4d98246c8..4fff99ff4 100644
+--- a/src/main/resources/lod_core/lang/en.lang
++++ b/src/main/resources/lod_core/lang/en.lang
+@@ -13,6 +13,8 @@ lod_core.config.category.other.label=Other
+ 
+ # UI text
+ lod_core.ui.hotkey=%s (%s)
++lod_core.ui.extension_menu.title=More
++lod_core.ui.extension_menu.back=Back
+ 
+ lod_core.ui.title.uncategorized_saves=Uncategorized saves found. Please enter a name for your campaign.
+ lod_core.ui.title.campaign_name=Campaign name:
+@@ -162,6 +164,7 @@ lod_core.ui.ingame_menu.status=Status
+ lod_core.ui.ingame_menu.additions=Additions
+ lod_core.ui.ingame_menu.replace=Replace
+ lod_core.ui.ingame_menu.options=Options
++lod_core.ui.ingame_menu.more=More
+ lod_core.ui.ingame_menu.load=Load
+ lod_core.ui.ingame_menu.save=Save
+ 
+diff --git a/src/test/java/legend/game/inventory/screens/ExtensionMenuTest.java b/src/test/java/legend/game/inventory/screens/ExtensionMenuTest.java
+new file mode 100644
+index 000000000..3a7db2875
+--- /dev/null
++++ b/src/test/java/legend/game/inventory/screens/ExtensionMenuTest.java
+@@ -0,0 +1,76 @@
++package legend.game.inventory.screens;
++
++import legend.core.lang.RawText;
++import legend.game.modding.events.menu.ExtensionMenuEntry;
++import legend.game.modding.events.menu.GatherExtensionMenuEntriesEvent;
++import org.junit.jupiter.api.Test;
++import org.legendofdragoon.modloader.registries.RegistryId;
++
++import java.util.concurrent.atomic.AtomicBoolean;
++
++import static org.junit.jupiter.api.Assertions.assertEquals;
++import static org.junit.jupiter.api.Assertions.assertFalse;
++import static org.junit.jupiter.api.Assertions.assertSame;
++import static org.junit.jupiter.api.Assertions.assertThrows;
++import static org.junit.jupiter.api.Assertions.assertTrue;
++
++final class ExtensionMenuTest {
++  private static ExtensionMenuEntry entry(final String id, final int order) {
++    return new ExtensionMenuEntry(new RegistryId("test", id), new RawText(id), order, unload -> new ProbeScreen(unload));
++  }
++
++  @Test
++  void mainMenuVisibilityAndRetailLayoutRemainConditionalAndFixed() {
++    assertFalse(MainMenuScreen.shouldShowMore(new GatherExtensionMenuEntriesEvent().getEntries()));
++
++    final GatherExtensionMenuEntriesEvent event = new GatherExtensionMenuEntriesEvent();
++    event.add(entry("one", 0));
++    assertTrue(MainMenuScreen.shouldShowMore(event.getEntries()));
++    assertEquals(14, MainMenuScreen.RETAIL_BUTTON_COUNT);
++    assertEquals(7, MainMenuScreen.BUTTONS_PER_COLUMN);
++    assertEquals(5, MainMenuScreen.FIRST_BLANK_INDEX);
++    assertEquals(11, MainMenuScreen.EXTENSION_MENU_INDEX);
++  }
++
++  @Test
++  void entriesAreOrderedByOrderThenStableId() {
++    final GatherExtensionMenuEntriesEvent event = new GatherExtensionMenuEntriesEvent();
++    event.add(entry("z", 10));
++    event.add(entry("b", 5));
++    event.add(entry("a", 5));
++
++    assertEquals(java.util.List.of("test:a", "test:b", "test:z"),
++      event.getEntries().stream().map(value -> value.id().toString()).toList());
++  }
++
++  @Test
++  void duplicateIdsAreRejectedWithoutReplacingTheFirstEntry() {
++    final GatherExtensionMenuEntriesEvent event = new GatherExtensionMenuEntriesEvent();
++    final ExtensionMenuEntry first = entry("duplicate", 1);
++    event.add(first);
++
++    assertThrows(IllegalArgumentException.class, () -> event.add(entry("duplicate", 2)));
++    assertSame(first, event.getEntries().getFirst());
++  }
++
++  @Test
++  void extensionCollectionHasNoSevenEntryCapAndFactoryReceivesOneLevelUnload() {
++    final GatherExtensionMenuEntriesEvent event = new GatherExtensionMenuEntriesEvent();
++    for(int i = 0; i < 12; i++) event.add(entry("entry_" + i, i));
++    assertEquals(12, event.getEntries().size());
++    assertEquals(7, ExtensionMenuScreen.VISIBLE_ROWS);
++
++    final AtomicBoolean poppedOneLevel = new AtomicBoolean();
++    final ProbeScreen screen = (ProbeScreen)ExtensionMenuScreen.createScreen(event.getEntries().getFirst(), () -> poppedOneLevel.set(true));
++    screen.back();
++    assertTrue(poppedOneLevel.get());
++  }
++
++  private static final class ProbeScreen extends MenuScreen {
++    private final Runnable unload;
++
++    private ProbeScreen(final Runnable unload) { this.unload = unload; }
++    private void back() { this.unload.run(); }
++    @Override protected void render() { }
++  }
++}
