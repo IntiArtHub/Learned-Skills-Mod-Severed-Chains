@@ -1,16 +1,16 @@
 # Changelog
 
-## 1.1.0 release candidate (local, unpublished)
+## 1.1.0
 
 - Added Buff Dance and Quickchange alongside Steal, using cumulative mastery thresholds of 20 / 60 / 99.
 - Added Buff Dance party stat effects and rank-scaled Quickchange uses.
 - Added Quickchange's staged five-slot loadout editor with equipment icons, names, net gear deltas, sorting, cancellation, and one final confirmation.
 - Quickchange completion now plays animation 3, briefly transitions through animation 31, then restores the previous animation.
-- Added the v1.1 menu icon spacing and layering adjustments; final spacing and animation cleanup still need a last visual retest.
-- Removed hidden Quickchange probes, the animation preview action, and test property overrides from the release candidate.
+- Added the v1.1 menu icon spacing and layering adjustments.
+- Removed hidden Quickchange probes, the animation preview action, and test property overrides from the release build.
 - Reduced Forest vendor test stock to the Bastard Sword at 30G; Broad Sword is ATK 2 and Bastard Sword is ATK 7 in the current test data.
 - Revalidated the core against Severed Chains 3.0.0-1780-devbuild and ported the exact-build Menu Addon engine extension to commit `d3d4c02cbf1c74a4db39cfc10520431a6b8cc150`.
-- The candidate has not been published.
+- Updated the optional Menu Addon installer, verifier, uninstaller, exact engine metadata checks, backup handling, and 1780 payload hashes.
 
 ## 1.0.0
 

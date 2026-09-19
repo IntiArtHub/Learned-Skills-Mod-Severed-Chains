@@ -2,19 +2,19 @@
 
 Learned Skills is an extensible gameplay framework for [Severed Chains](https://github.com/Legend-of-Dragoon-Modding/Severed-Chains) that integrates new abilities into character-specific progression.
 
-Individual abilities can exist independently as standalone mods, but Learned Skills can wrap them in Skill Manuals that players discover or buy, equip, train through gameplay, rank up, and permanently master. This lets multiple gameplay modifications share one coherent progression system. The local v1.1.0 release candidate includes **Steal**, **Buff Dance**, and **Quickchange**.
+Individual abilities can exist independently as standalone mods, but Learned Skills can wrap them in Skill Manuals that players discover or buy, equip, train through gameplay, rank up, and permanently master. This lets multiple gameplay modifications share one coherent progression system. Version 1.1.0 includes **Steal**, **Buff Dance**, and **Quickchange**.
 
 The framework keeps ability logic modular. Where the architecture permits, a developer can reuse or adapt an individual ability independently of the Manual and mastery presentation.
 
-## Standard installation Recommended
+## Standard installation (recommended)
 
-1. Use the locally prepared v1.1.0 release candidate package.
+1. Download the v1.1.0 release ZIP.
 2. Copy the included v1.1.0 core JAR into the Severed Chains `mods` folder.
 3. Launch the game and enable **Learned Skills** for the campaign if prompted.
 
 Done. This supplies the complete gameplay system and requires no engine replacement.
 
-**Tested in Severed Chains `3.0.0-1780-devbuild`.** The core also passes a stock-engine compile/linkage check. The v1.1.0 candidate has not been published. Ordinary upstream updates may remain compatible unless they change APIs or behaviour used by the mod.
+**Tested in Severed Chains `3.0.0-1780-devbuild`.** The core also passes a stock-engine compile/linkage check. Ordinary upstream updates may remain compatible unless they change APIs or behaviour used by the mod.
 
 ## First bundled skill: Steal
 
@@ -35,7 +35,7 @@ The Forest vendor keeps its normal stock and sells all three Skill Manuals. Bast
 The optional Menu Addon adds **Main Menu â†’ More â†’ Skills**, showing exact mastery progress, rank, **Learning now**, **Not learning**, **MASTERED**, and each Skill Effect. It appears as a separate mod; enable both **Learned Skills** and **Learned Skills Menu Addon**. The core gameplay mod works fully without it.
 
 > [!WARNING]
-> The private Menu Addon test kit is tied to Severed Chains `3.0.0-1780-devbuild`, commit `d3d4c02cbf1c74a4db39cfc10520431a6b8cc150`. Do **not** update Severed Chains while it is installed. Uninstall the Menu Addon **before** updating Severed Chains.
+> The included Menu Addon is tied to Severed Chains `3.0.0-1780-devbuild`, commit `d3d4c02cbf1c74a4db39cfc10520431a6b8cc150`. Do **not** update Severed Chains while it is installed. Uninstall the Menu Addon **before** updating Severed Chains.
 
 The addon replaces one core engine JAR; standard Learned Skills does not. QoL+ and other modified engine distributions may conflict. Its installer verifies all relevant hashes and refuses unknown engines. Its uninstaller will not blindly restore an obsolete engine if another update changed the active engine after installation.
 
@@ -58,7 +58,7 @@ Internal registry and save identifiers remain under `skill_system` for compatibi
 - [Animation research](ANIMATION_RESEARCH.md)
 - [UI extension research](UI_EXTENSION_RESEARCH.md)
 
-The optional 1780 Menu Addon source is retained in the private test kit. No v1.1.0 GitHub publication has been made.
+The optional 1780 Menu Addon's exact patch, build instructions, engine baseline, third-party notice, and AGPL licence are included in the release ZIP.
 
 ### Build prerequisites
 

@@ -1,6 +1,6 @@
 # v1.1.0 release preparation
 
-Status: local candidate only. Do not push, tag, upload, or publish until the remaining acceptance checks pass and publication is explicitly approved.
+Status: accepted by the user on Severed Chains 3.0.0-1780-devbuild and explicitly approved for GitHub publication.
 
 ## Included changes
 
@@ -16,12 +16,12 @@ Status: local candidate only. Do not push, tag, upload, or publish until the rem
 - Core compiled and passed its full tests and stock compatibility check against the exact 1780 engine and libraries.
 - Optional Menu Addon compiled and passed its isolation and engine extension tests against the exact 1780 patched engine payload. Its private installer hashes were refreshed for testing.
 - The core JAR contains no animation viewer, Quickchange probe, or test-override classes.
-- The earlier five-slot editor, sorting, stat preview, normal mastery gain, and animation choice were accepted in gameplay before the final spacing and cleanup edits.
+- The five-slot editor, sorting, stat preview, normal mastery gain, animation choice, final spacing, and overall release state were accepted by the user.
 
-## Before publication
+## Final publication record
 
-- Visually retest the final icon size, entry spacing, back/confirm row spacing, and animation 3 to brief 31 sequence.
-- Test Quickchange Manual consumption when mastery completes after the Manual has been swapped into inventory. Preserve a save that can be restored if needed.
-- Retest the optional 1780 Menu Addon in game, including More > Skills and uninstall/restore behaviour, before deciding whether to include it as a separate exact-build release component.
-- Audit the final package contents, hashes, license notices, and Git diff; confirm no local paths, saves, logs, debug tools, or private test kit enter the published archive.
-- Confirm the target GitHub branch/tag and request explicit approval before any push, tag, release creation, or upload.
+- User accepted the current gameplay and interface state and explicitly authorised publication.
+- The combined release ZIP contains the core JAR plus the optional Menu Addon installer, verifier, uninstaller, payloads, exact source patch, build instructions, notices, and AGPL licence.
+- Core and Menu Addon builds passed against 1780. The public installer passed pristine verification, v1.0 filename upgrade, install, patched verification, uninstall, and pristine restoration in a disposable layout.
+- Quickchange Manual consumption after moving the Manual into inventory remains documented in Known Issues because that later-game scenario was not separately retested.
+- Publish the committed source, engine source branch, `v1.1.0` tag, combined release ZIP, and ZIP checksum.
