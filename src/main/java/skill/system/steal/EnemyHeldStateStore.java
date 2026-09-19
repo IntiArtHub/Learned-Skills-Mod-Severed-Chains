@@ -22,12 +22,6 @@ public final class EnemyHeldStateStore {
   }
 
   public HeldResourceState get(final Object enemyInstance) { return this.states.get(enemyInstance); }
-  public HeldResourceState createForced(final Object enemyInstance, final HeldResource resource) {
-    if(this.states.containsKey(enemyInstance)) throw new IllegalStateException("Enemy already initialized");
-    final HeldResourceState state = new HeldResourceState(resource);
-    this.states.put(enemyInstance, state);
-    return state;
-  }
   public int size() { return this.states.size(); }
   public void clear() { this.states.clear(); }
 }

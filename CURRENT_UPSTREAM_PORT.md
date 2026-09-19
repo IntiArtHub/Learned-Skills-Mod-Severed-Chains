@@ -1,5 +1,7 @@
 # Current-Upstream Port Evidence
 
+Historical v1.0.0 port record. The v1.1.0 candidate was tested on build 1779; see the root README and release checklist for current status.
+
 Frozen upstream: official Windows devbuild `3.0.0-1739-devbuild`, commit `b69c397a2ccb6165e12480d13523840073f08a80`.
 
 ## Binary verification

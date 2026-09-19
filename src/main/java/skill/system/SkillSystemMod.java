@@ -27,6 +27,12 @@ import org.legendofdragoon.modloader.registries.RegistryId;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import skill.system.battle.CustomBattleActionBridge;
+import skill.system.battle.BattleSkillMastery;
+import skill.system.buffdance.BuffDanceBattleAction;
+import skill.system.quickchange.QuickchangeBattleAction;
+import legend.lodmod.LodEquipment;
+import skill.system.equipment.BuffDanceManualEquipment;
+import skill.system.equipment.QuickchangeManualEquipment;
 import skill.system.equipment.StealManualEquipment;
 import skill.system.equipment.ManualAtlasIcon;
 import skill.system.persistence.SkillMasteryConfig;
@@ -58,12 +64,15 @@ public final class SkillSystemMod {
   private static final Registrar<BattleAction, RegisterBattleActionsEvent> BATTLE_ACTIONS = new Registrar<>(REGISTRIES.battleActions, MOD_ID);
 
   public static final RegistryDelegate<Equipment> STEAL_MANUAL = EQUIPMENT.register("steal_manual", StealManualEquipment::new);
+  public static final RegistryDelegate<Equipment> BUFF_DANCE_MANUAL = EQUIPMENT.register("buff_dance_manual", BuffDanceManualEquipment::new);
+  public static final RegistryDelegate<Equipment> QUICKCHANGE_MANUAL = EQUIPMENT.register("quickchange_manual", QuickchangeManualEquipment::new);
   public static final RegistryDelegate<SkillMasteryConfig> MASTERY_CONFIG = CONFIGS.register("mastery_data", SkillMasteryConfig::new);
   public static final RegistryDelegate<BattleAction> STEAL_ACTION = BATTLE_ACTIONS.register("steal", StealBattleAction::new);
+  public static final RegistryDelegate<BattleAction> BUFF_DANCE_ACTION = BATTLE_ACTIONS.register("buff_dance", BuffDanceBattleAction::new);
+  public static final RegistryDelegate<BattleAction> QUICKCHANGE_ACTION = BATTLE_ACTIONS.register("quickchange", QuickchangeBattleAction::new);
   public static final EnemyHeldStateStore HELD_RESOURCES = new EnemyHeldStateStore();
 
   private static RandomGenerator battleRng = RandomGenerator.getDefault();
-  private static boolean testMasteryApplied;
 
   public SkillSystemMod() { EVENTS.register(this); }
 
@@ -74,11 +83,20 @@ public final class SkillSystemMod {
 
   @EventListener
   public void engineStateChanged(final EngineStateChangeEvent event) {
+    BattleSkillMastery.clear();
+    if(BUFF_DANCE_ACTION.isValid()) ((BuffDanceBattleAction)BUFF_DANCE_ACTION.get()).reset();
+    if(QUICKCHANGE_ACTION.isValid()) ((QuickchangeBattleAction)QUICKCHANGE_ACTION.get()).reset();
     if(event.engineState instanceof final Battle battle) CustomBattleActionBridge.install(battle);
   }
 
   @EventListener
   public void gatherBattleActions(final GatherBattleActionsEvent event) {
+    if(((QuickchangeBattleAction)QUICKCHANGE_ACTION.get()).canUse(event.player)) {
+      event.actions.put(QUICKCHANGE_ACTION.get(), 470);
+    }
+    if(SkillSystemRuntime.canUseSkill(event.player.character, SkillSystemRuntime.BUFF_DANCE)) {
+      event.actions.put(BUFF_DANCE_ACTION.get(), 460);
+    }
     if(!SkillSystemRuntime.canUseSkill(event.player.character, SkillSystemRuntime.STEAL)) return;
 
     event.actions.put(STEAL_ACTION.get(), 450);
@@ -95,6 +113,8 @@ public final class SkillSystemMod {
 
   @EventListener
   public void gameLoaded(final GameLoadedEvent event) {
+    BattleSkillMastery.clear();
+    ((QuickchangeBattleAction)QUICKCHANGE_ACTION.get()).reset();
     SkillSystemRuntime.load();
   }
 
@@ -103,18 +123,25 @@ public final class SkillSystemMod {
     if(!"lod:forest_item_shop".equals(event.shop.getRegistryId().toString())) return;
     final boolean present = event.contents.stream().anyMatch(entry -> entry.item.getRegistryId().toString().equals("skill_system:steal_manual"));
     if(!present) event.contents.add(new ShopScreen.ShopEntry<InventoryEntry<?>>(STEAL_MANUAL.get(), 20));
+    if(event.contents.stream().noneMatch(entry -> entry.item.getRegistryId().toString().equals("skill_system:buff_dance_manual"))) {
+      event.contents.add(new ShopScreen.ShopEntry<InventoryEntry<?>>(BUFF_DANCE_MANUAL.get(), 20));
+    }
+    if(event.contents.stream().noneMatch(entry -> entry.item.getRegistryId().toString().equals("skill_system:quickchange_manual"))) {
+      event.contents.add(new ShopScreen.ShopEntry<InventoryEntry<?>>(QUICKCHANGE_MANUAL.get(), 20));
+    }
+    // Early, low-strength spare sword for practising Quickchange.
+    final Equipment bastardSword = LodEquipment.BASTARD_SWORD.get();
+    if(event.contents.stream().noneMatch(entry -> entry.item == bastardSword)) {
+      event.contents.add(new ShopScreen.ShopEntry<InventoryEntry<?>>(bastardSword, 30));
+    }
   }
 
   @EventListener
   public void battleStarted(final BattleStartedEvent event) {
+    BattleSkillMastery.clear();
+    ((QuickchangeBattleAction)QUICKCHANGE_ACTION.get()).reset();
     HELD_RESOURCES.clear();
     battleRng = RandomGeneratorFactory.<RandomGenerator>of("L64X128MixRandom").create(System.nanoTime() ^ System.identityHashCode(event.battle));
-    this.applyTestMasteryIfRequested();
-    final Integer forcedGold = SkillSystemDiagnostics.forcedStealGold();
-    if(forcedGold != null || SkillSystemDiagnostics.forceStealSuccess()) {
-      LOGGER.warn("[SkillSystem] TEST ONLY overrides active: forcedGold=%s forceSuccess=%s",
-        forcedGold, SkillSystemDiagnostics.forceStealSuccess());
-    }
     for(int slot = 0; slot < battleState_8006e398.getMonsterCount(); slot++) {
       if(battleState_8006e398.monsterBents_e50[slot] == null) continue;
       final MonsterBattleEntity enemy = battleState_8006e398.monsterBents_e50[slot].innerStruct_00;
@@ -123,44 +150,16 @@ public final class SkillSystemMod {
         if(drop.item() instanceof ItemStack) candidates.add(new HeldResource(HeldResource.ResourceType.ITEM, drop.item(), drop.chance()));
         else if(drop.item() instanceof Equipment) candidates.add(new HeldResource(HeldResource.ResourceType.EQUIPMENT, drop.item(), drop.chance()));
       }
-      if(forcedGold != null) {
-        HELD_RESOURCES.createForced(enemy, new HeldResource(HeldResource.ResourceType.GOLD, forcedGold, 100));
-      } else {
-        HELD_RESOURCES.create(enemy, candidates, enemy.combatant_144.gold_196, StealBossRegistry.isBoss(enemy.charId_272), battleRng);
-      }
-      SkillSystemDiagnostics.log(LOGGER,
-        "Held resource generated target=%s charId=%d boss=%s state=%s", enemy.getName(), enemy.charId_272,
+      HELD_RESOURCES.create(enemy, candidates, enemy.combatant_144.gold_196, StealBossRegistry.isBoss(enemy.charId_272), battleRng);
+      LOGGER.debug("Held resource generated target=%s charId=%d boss=%s state=%s", enemy.getName(), enemy.charId_272,
         StealBossRegistry.isBoss(enemy.charId_272), HELD_RESOURCES.get(enemy) == null ? null : HELD_RESOURCES.get(enemy).resource());
     }
   }
 
-  private void applyTestMasteryIfRequested() {
-    if(testMasteryApplied || !SkillSystemDiagnostics.enabled()) return;
-    final String raw = System.getProperty(SkillSystemDiagnostics.TEST_MASTERY_PROPERTY);
-    if(raw == null || raw.isBlank()) return;
-
-    final int mastery;
-    try {
-      mastery = Integer.parseInt(raw);
-    } catch(final NumberFormatException e) {
-      LOGGER.warn("[SkillSystem] Ignoring invalid test mastery value %s", raw);
-      testMasteryApplied = true;
-      return;
-    }
-
-    for(int slot = 0; slot < battleState_8006e398.getPlayerCount(); slot++) {
-      final var state = battleState_8006e398.playerBents_e40.get(slot);
-      if(state != null && SkillSystemRuntime.isSkillManualEquipped(state.innerStruct_00.character, SkillSystemRuntime.STEAL)) {
-        SkillSystemRuntime.setSkillMasteryForTesting(state.innerStruct_00.character, SkillSystemRuntime.STEAL, mastery);
-        LOGGER.warn("[SkillSystem] TEST ONLY: set %s Steal mastery to %d", state.innerStruct_00.getName(),
-          SkillSystemRuntime.getSkillMastery(state.innerStruct_00.character, SkillSystemRuntime.STEAL));
-      }
-    }
-    testMasteryApplied = true;
-  }
-
   @EventListener
   public void battleEnded(final BattleEndedEvent event) {
+    BattleSkillMastery.finish(event);
+    ((BuffDanceBattleAction)BUFF_DANCE_ACTION.get()).reset();
     HELD_RESOURCES.clear();
   }
 

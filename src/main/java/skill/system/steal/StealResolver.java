@@ -23,21 +23,11 @@ public final class StealResolver {
   }
 
   public Resolution resolveDetailed(final HeldResourceState state, final int rank, final RandomGenerator rng, final Awarder awarder) {
-    return this.resolveDetailed(state, rank, rng, awarder, false);
-  }
-
-  public Resolution resolveDetailed(final HeldResourceState state, final int rank, final RandomGenerator rng,
-                                    final Awarder awarder, final boolean forceSuccess) {
     Objects.requireNonNull(state, "state");
     if(!state.hasAvailableResource()) return new Resolution(Outcome.NOTHING, 0, 0, -1);
     final HeldResource resource = state.resource();
     final int chance = this.finalChance(resource.baseChance(), rank);
-    final int roll = forceSuccess ? -2 : rng.nextInt(100);
-    if(forceSuccess) {
-      if(!awarder.award(resource)) return new Resolution(Outcome.INVENTORY_FULL, resource.baseChance(), chance, roll);
-      state.markStolen();
-      return new Resolution(Outcome.SUCCESS, resource.baseChance(), chance, roll);
-    }
+    final int roll = rng.nextInt(100);
     if(roll >= chance) return new Resolution(Outcome.FAILED, resource.baseChance(), chance, roll);
     if(!awarder.award(resource)) return new Resolution(Outcome.INVENTORY_FULL, resource.baseChance(), chance, roll);
     state.markStolen();

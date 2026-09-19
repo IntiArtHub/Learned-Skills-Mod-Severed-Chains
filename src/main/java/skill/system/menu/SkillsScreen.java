@@ -16,6 +16,7 @@ import legend.game.inventory.screens.controls.ListBox;
 import legend.game.inventory.screens.controls.Panel;
 import skill.system.SkillSystemRuntime;
 import skill.system.api.SkillDefinition;
+import skill.system.buffdance.BuffDanceEffect;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -83,8 +84,8 @@ public final class SkillsScreen extends MenuScreen {
     this.effectBody = label(198, 134, DETAIL_TEXT_WIDTH, 27);
     this.effectBody.setScale(DETAIL_BODY_SCALE);
     label(new I18nText("skill_system.ui.description"), 198, 164, DETAIL_TEXT_WIDTH, 14);
-    this.descriptionBody = label(198, 180, DETAIL_TEXT_WIDTH, 28);
-    this.descriptionBody.setScale(DETAIL_BODY_SCALE);
+    this.descriptionBody = label(198, 176, DETAIL_TEXT_WIDTH, 28);
+    this.descriptionBody.setScale(0.72f);
 
     this.addHotkey(new I18nText("skill_system.ui.back"), INPUT_ACTION_MENU_BACK, this::back);
     this.setFocus(this.skills);
@@ -145,7 +146,18 @@ public final class SkillsScreen extends MenuScreen {
     });
     this.mastery.setText(new RawText(I18n.translate("skill_system.ui.mastery") + "  " + entry.progress()));
 
-    final String effects = entry.effectTranslationKeys().stream().map(I18n::translate).collect(Collectors.joining("\n"));
+    final String effects = entry.effectTranslationKeys().stream().map(key -> {
+      final String translated = I18n.translate(key);
+      if(!translated.equals(key)) return translated;
+      final String prefix = "skill_system.skill.buff_dance.effect.rank_";
+      if(key.startsWith(prefix)) {
+        try {
+          final int rank = Integer.parseInt(key.substring(prefix.length()));
+          return "All five stats +" + BuffDanceEffect.strength(rank) + "%; 3 turns";
+        } catch(final NumberFormatException ignored) { }
+      }
+      return translated;
+    }).collect(Collectors.joining("\n"));
     this.effectBody.setText(new RawText(wrap(this.effectBody, effects)));
     this.descriptionBody.setText(new RawText(wrap(this.descriptionBody, I18n.translate(entry.skill().descriptionTranslationKey()))));
   }

@@ -9,11 +9,15 @@ import skill.system.api.SkillMasteryStore;
 import skill.system.persistence.SkillMasteryCodec;
 
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static legend.core.GameEngine.CONFIG;
+import static legend.game.Scus94491BpeSegment_800b.gameState_800babc8;
 
 /** Engine-facing facade. Progress is always resolved from stable template registry IDs. */
 public final class SkillSystemRuntime {
+  private static final Logger LOGGER = LogManager.getFormatterLogger(SkillSystemRuntime.class);
   public static final SkillDefinition STEAL = new SkillDefinition(
     "skill_system:steal",
     "skill_system:steal_manual",
@@ -27,7 +31,27 @@ public final class SkillSystemRuntime {
     ),
     20, 60, 99
   );
-  private static final List<SkillDefinition> SKILLS = List.of(STEAL);
+  public static final SkillDefinition BUFF_DANCE = new SkillDefinition(
+    "skill_system:buff_dance", "skill_system:buff_dance_manual",
+    "skill_system.skill.buff_dance.name", "skill_system.skill.buff_dance.description",
+    List.of(
+      List.of("skill_system.skill.buff_dance.effect.rank_1"),
+      List.of("skill_system.skill.buff_dance.effect.rank_2"),
+      List.of("skill_system.skill.buff_dance.effect.rank_3"),
+      List.of("skill_system.skill.buff_dance.effect.rank_4")
+    ), 20, 60, 99
+  );
+  public static final SkillDefinition QUICKCHANGE = new SkillDefinition(
+    "skill_system:quickchange", "skill_system:quickchange_manual",
+    "skill_system.skill.quickchange.name", "skill_system.skill.quickchange.description",
+    List.of(
+      List.of("skill_system.skill.quickchange.effect.rank_1"),
+      List.of("skill_system.skill.quickchange.effect.rank_2"),
+      List.of("skill_system.skill.quickchange.effect.rank_3"),
+      List.of("skill_system.skill.quickchange.effect.rank_4")
+    ), 20, 60, 99
+  );
+  private static final List<SkillDefinition> SKILLS = List.of(STEAL, BUFF_DANCE, QUICKCHANGE);
   public static final SkillMasteryStore MASTERY = new SkillMasteryStore();
 
   private SkillSystemRuntime() { }
@@ -60,19 +84,32 @@ public final class SkillSystemRuntime {
   }
 
   public static MasteryChange addSkillMastery(final CharacterData2c character, final SkillDefinition skill, final int amount) {
+    return addSkillMastery(character, skill, amount, false);
+  }
+
+  /** Manual provenance is needed when Quickchange moved its granting manual into inventory. */
+  public static MasteryChange addSkillMastery(final CharacterData2c character, final SkillDefinition skill,
+                                              final int amount, final boolean usedThroughManual) {
+    final boolean manualEquipped = isSkillManualEquipped(character, skill);
     final MasteryChange change = MASTERY.addMastery(characterId(character), skill, amount);
     persist();
-    if(change.newlyMastered() && isSkillManualEquipped(character, skill)) {
-      character.equip(EquipmentSlot.ACCESSORY, null);
+    if(change.newlyMastered()) {
+      if(manualEquipped) {
+        character.equip(EquipmentSlot.ACCESSORY, null);
+      } else if(skill == QUICKCHANGE && usedThroughManual) {
+        final int index = findMatchingManualInInventory(skill.manualId());
+        if(index >= 0) gameState_800babc8.equipment_1e8.remove(index);
+        else LOGGER.warn("[Learned Skills] Quickchange mastery reached but no matching manual remained in inventory for %s", characterId(character));
+      }
     }
     return change;
   }
 
-  public static MasteryChange setSkillMasteryForTesting(final CharacterData2c character, final SkillDefinition skill, final int mastery) {
-    if(!SkillSystemDiagnostics.enabled()) throw new IllegalStateException("Test mastery requires skill_system.debug=true");
-    final MasteryChange change = MASTERY.setMastery(characterId(character), skill, mastery);
-    persist();
-    return change;
+  private static int findMatchingManualInInventory(final String manualId) {
+    for(int i = 0; i < gameState_800babc8.equipment_1e8.size(); i++) {
+      if(gameState_800babc8.equipment_1e8.get(i).getRegistryId().toString().equals(manualId)) return i;
+    }
+    return -1;
   }
 
   public static void load() {

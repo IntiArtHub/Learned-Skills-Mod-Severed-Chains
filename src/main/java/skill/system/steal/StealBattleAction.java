@@ -16,7 +16,6 @@ import legend.game.ui.UiBox;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector3f;
-import skill.system.SkillSystemDiagnostics;
 import skill.system.SkillSystemRuntime;
 import skill.system.api.MasteryChange;
 import skill.system.battle.BridgedBattleAction;
@@ -66,7 +65,7 @@ public final class StealBattleAction extends BattleAction implements BridgedBatt
   public BattleActionUseFlowControl use(final Battle battle, final PlayerBattleEntity player) {
     this.reset();
     this.stage = Stage.TARGET_WARMUP;
-    SkillSystemDiagnostics.log(LOGGER, "Steal selected actor=%s mastery=%d rank=%d",
+    LOGGER.debug("Steal selected actor=%s mastery=%d rank=%d",
       player.getName(), SkillSystemRuntime.getSkillMastery(player.character, SkillSystemRuntime.STEAL),
       SkillSystemRuntime.getSkillRank(player.character, SkillSystemRuntime.STEAL));
     return BattleActionUseFlowControl.CONTINUE_SCRIPT;
@@ -94,7 +93,7 @@ public final class StealBattleAction extends BattleAction implements BridgedBatt
     final int targetFlow = battle.hud.handleTargeting(1, false);
     if(targetFlow == 0) return BattleActionTickFlowControl.PAUSE_SCRIPT;
     if(targetFlow < 0) {
-      SkillSystemDiagnostics.log(LOGGER, "Steal targeting cancelled actor=%s", player.getName());
+      LOGGER.debug("Steal targeting cancelled actor=%s", player.getName());
       this.reset();
       return BattleActionTickFlowControl.REPEAT_TURN;
     }
@@ -103,7 +102,7 @@ public final class StealBattleAction extends BattleAction implements BridgedBatt
     final MonsterBattleEntity selected = SCRIPTS.getObject(targetIndex, MonsterBattleEntity.class);
     final int rank = SkillSystemRuntime.getSkillRank(player.character, SkillSystemRuntime.STEAL);
     final boolean boss = StealBossRegistry.isBoss(selected.charId_272);
-    SkillSystemDiagnostics.log(LOGGER, "Steal target actor=%s target=%s charId=%d boss=%s rank=%d",
+    LOGGER.debug("Steal target actor=%s target=%s charId=%d boss=%s rank=%d",
       player.getName(), selected.getName(), selected.charId_272, boss, rank);
 
     if(!StealTargetPolicy.canTarget(rank, boss)) {
@@ -143,7 +142,7 @@ public final class StealBattleAction extends BattleAction implements BridgedBatt
     if(this.stageTick >= APPROACH_TICKS) {
       player.getPosition().set(this.approach);
       final int contactAnimation = this.ensureContactAnimation(battle, player);
-      SkillSystemDiagnostics.log(LOGGER, "Steal contact animation=%d frames=%d oneShot=%s",
+      LOGGER.debug("Steal contact animation=%d frames=%d oneShot=%s",
         contactAnimation, player.model_148.remainingFrames_9e, player.getState().hasFlag(FLAG_ANIMATE_ONCE));
       this.stage = Stage.CONTACT;
       this.stageTick = 0;
@@ -162,7 +161,7 @@ public final class StealBattleAction extends BattleAction implements BridgedBatt
     final StealExecutionService.Result result = this.execution.execute(player, this.target);
     this.message = this.resultMessage(result);
     this.queueMasteryMessages(player, result.masteryChange(), manualWasEquipped);
-    SkillSystemDiagnostics.log(LOGGER,
+    LOGGER.debug(
       "Steal resolution target=%s resource=%s baseChance=%d multiplier=%d finalChance=%d roll=%d outcome=%s mastery=%s",
       this.target.getName(), result.resource(), result.resolution().baseChance(),
       resolutionRank, result.resolution().finalChance(),
@@ -199,7 +198,7 @@ public final class StealBattleAction extends BattleAction implements BridgedBatt
       return BattleActionTickFlowControl.PAUSE_SCRIPT;
     }
 
-    SkillSystemDiagnostics.log(LOGGER, "Steal complete actor=%s positionRestored=%s", player.getName(), player.getPosition());
+    LOGGER.debug("Steal complete actor=%s positionRestored=%s", player.getName(), player.getPosition());
     this.reset();
     return BattleActionTickFlowControl.CONTINUE_SCRIPT;
   }
@@ -217,7 +216,7 @@ public final class StealBattleAction extends BattleAction implements BridgedBatt
       return BattleActionTickFlowControl.PAUSE_SCRIPT;
     }
 
-    SkillSystemDiagnostics.log(LOGGER, "Steal complete after mastery messages");
+    LOGGER.debug("Steal complete after mastery messages");
     this.reset();
     return BattleActionTickFlowControl.CONTINUE_SCRIPT;
   }
@@ -320,7 +319,8 @@ public final class StealBattleAction extends BattleAction implements BridgedBatt
     final int y = menu.y_08 - 16;
     menu.transforms.scaling(16.0f, 16.0f, 1.0f);
     menu.transforms.transfer.set(x, y, 123.8f);
-    ManualAtlasIcon.STEAL.renderBattle(menu.transforms);
+    final int iconState = selected ? new int[] {0, 1, 2, 1}[menu.iconStateIndex_26] : 0;
+    ManualAtlasIcon.renderStealAction(menu.transforms, iconState);
     final int oldZ = textZ_800bdf00;
     textZ_800bdf00 = 124;
     if(selected && menu.renderSelectedIconText_40) {

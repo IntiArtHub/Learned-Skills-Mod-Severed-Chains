@@ -1,5 +1,16 @@
 skill_system.name=Learned Skills
 
+skill_system.equipment.buff_dance_manual.name=Buff Dance Manual
+skill_system.equipment.buff_dance_manual.description=Equip to use Buff Dance.\nConsumed when mastered.
+skill_system.battle_action.buff_dance.name=Buff Dance
+skill_system.skill.buff_dance.name=Buff Dance
+skill_system.skill.buff_dance.description=Perform an inspiring dance!\nIncrease party speed, defense & power: 3 turns
+skill_system.skill.buff_dance.effect.rank_1=All five stats +15%; 3 turns
+skill_system.skill.buff_dance.effect.rank_2=All five stats +30%; 3 turns
+skill_system.skill.buff_dance.effect.rank_3=All five stats +50%; 3 turns
+skill_system.skill.buff_dance.effect.rank_4=All five stats +75%; 3 turns
+skill_system.message.buff_dance=Buff Dance: party stats +%d%%!
+
 skill_system.equipment.steal_manual.name=Steal Manual
 skill_system.equipment.steal_manual.description=Equip to use Steal.\nConsumed when mastered.
 
@@ -22,6 +33,16 @@ skill_system.message.steal_level_2=%s's Steal reached Lv. 2!
 skill_system.message.steal_level_3=%s's Steal reached Lv. 3!
 skill_system.message.steal_mastered=%s mastered Steal!
 skill_system.message.manual_consumed=Steal Manual Consumed
+
+skill_system.equipment.quickchange_manual.name=Quickchange Manual
+skill_system.equipment.quickchange_manual.description=Equip to use Quickchange.\nConsumed when mastered.
+skill_system.battle_action.quickchange.name=Quickchange
+skill_system.skill.quickchange.name=Quickchange
+skill_system.skill.quickchange.description=Swap gear during battle.\nConfirm once, or cancel freely.
+skill_system.skill.quickchange.effect.rank_1=1 loadout change per battle
+skill_system.skill.quickchange.effect.rank_2=2 loadout changes per battle
+skill_system.skill.quickchange.effect.rank_3=3 loadout changes per battle
+skill_system.skill.quickchange.effect.rank_4=Unlimited loadout changes per battle
 
 skill_system.ui.skills=Skills
 skill_system.ui.learning_now=Learning now

@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.0 release candidate (local, unpublished)
+
+- Added Buff Dance and Quickchange alongside Steal, using cumulative mastery thresholds of 20 / 60 / 99.
+- Added Buff Dance party stat effects and rank-scaled Quickchange uses.
+- Added Quickchange's staged five-slot loadout editor with equipment icons, names, net gear deltas, sorting, cancellation, and one final confirmation.
+- Quickchange completion now plays animation 3, briefly transitions through animation 31, then restores the previous animation.
+- Added the v1.1 menu icon spacing and layering adjustments; final spacing and animation cleanup still need a last visual retest.
+- Removed hidden Quickchange probes, the animation preview action, and test property overrides from the release candidate.
+- Reduced Forest vendor test stock to the Bastard Sword at 30G; Broad Sword is ATK 2 and Bastard Sword is ATK 7 in the current test data.
+- The candidate is built for Severed Chains 3.0.0-1779-devbuild and has not been published.
+
 ## 1.0.0
 
 - Released Learned Skills as an extensible Skill Manual and character-mastery framework, with Steal as the first bundled skill.

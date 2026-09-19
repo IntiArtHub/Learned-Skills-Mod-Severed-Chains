@@ -9,6 +9,7 @@
 # Local Severed Chains dependencies and release staging
 .upstream/
 release/
+private-rollback/
 gradle.properties
 
 # IDE and operating-system state
@@ -30,6 +31,8 @@ temp/
 
 # Internal handoff and obsolete local test helpers
 PROJECT_STATE.md
+BUFF_DANCE_TEST.md
+NEW_SKILLS_HANDOFF.md
 skill system handoff.txt
 HUMAN_TEST_CHECKLIST.md
 RC1_HUMAN_TEST_CHECKLIST.md

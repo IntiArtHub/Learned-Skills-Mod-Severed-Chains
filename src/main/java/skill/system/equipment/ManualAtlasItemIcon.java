@@ -7,17 +7,13 @@ import legend.core.renderer.QuadBuilder;
 import legend.core.renderer.Texture;
 import legend.game.inventory.Equipment;
 import legend.game.textures.TextureAtlasIcon;
+import legend.game.textures.TextureAtlas;
 import legend.game.types.Renderable58;
 import legend.game.types.RenderableMetrics14;
 import legend.game.types.UiPart;
 import legend.game.types.UiType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import skill.system.SkillSystemDiagnostics;
-
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import static legend.game.Menus.addToManagedRenderables;
 import static legend.game.Menus.allocateManualRenderable;
@@ -30,8 +26,9 @@ public final class ManualAtlasItemIcon {
   private final ManualAtlasIcon atlasIcon;
   private final int anchorX;
   private final int anchorY;
-  private final Set<String> loggedContexts = ConcurrentHashMap.newKeySet();
   private UiType uiType;
+  /** The engine replaces the mod atlas when a campaign is loaded. */
+  private TextureAtlas cachedAtlas;
 
   ManualAtlasItemIcon(final ManualAtlasIcon atlasIcon, final int anchorX, final int anchorY) {
     this.atlasIcon = atlasIcon;
@@ -49,7 +46,6 @@ public final class ManualAtlasItemIcon {
     final TextureAtlasIcon resolved = this.atlasIcon.icon();
     final Renderable58 renderable = allocateManualRenderable(this.uiType(resolved), null);
     this.configure(renderable, x, y, flags);
-    this.logInvocation(equipment, x, y, flags, resolved);
     return renderable;
   }
 
@@ -68,7 +64,8 @@ public final class ManualAtlasItemIcon {
   }
 
   private UiType uiType(final TextureAtlasIcon icon) {
-    if(this.uiType == null) {
+    if(this.uiType == null || this.cachedAtlas != icon.atlas) {
+      if(this.uiType != null && this.uiType.obj != null) this.uiType.obj.delete();
       final Texture texture = icon.atlas.texture;
       final RenderableMetrics14 metrics = new AtlasMetrics(texture);
       final UiType type = new UiType(new UiPart[] {new UiPart(new RenderableMetrics14[] {metrics}, 0)});
@@ -81,31 +78,12 @@ public final class ManualAtlasItemIcon {
       obj.persistent = true;
       type.obj = obj;
       this.uiType = type;
-      SkillSystemDiagnostics.log(LOGGER,
-        "Built managed atlas ItemIcon id=%s rectangle=%d,%d %dx%d footprint=%dx%d anchor=%d,%d path=managed-renderable",
+      this.cachedAtlas = icon.atlas;
+      LOGGER.debug("Built managed atlas ItemIcon id=%s rectangle=%d,%d %dx%d footprint=%dx%d anchor=%d,%d",
         this.atlasIcon.id(), icon.rect.x, icon.rect.y, icon.rect.w, icon.rect.h,
         FOOTPRINT, FOOTPRINT, this.anchorX, this.anchorY);
     }
     return this.uiType;
-  }
-
-  private void logInvocation(final Equipment equipment, final int x, final int y, final int flags,
-                             final TextureAtlasIcon icon) {
-    if(!SkillSystemDiagnostics.enabled()) return;
-
-    final String context = StackWalker.getInstance().walk(frames -> frames
-      .filter(frame -> !frame.getClassName().startsWith("skill.system.equipment."))
-      .limit(8)
-      .map(frame -> frame.getClassName() + '#' + frame.getMethodName())
-      .collect(Collectors.joining(" <- ")));
-
-    if(this.loggedContexts.add(context + '|' + flags)) {
-      SkillSystemDiagnostics.log(LOGGER,
-        "Manual inventory icon invocation context=%s equipmentClass=%s registryId=%s x=%d y=%d flags=0x%x " +
-          "atlasLookup=resolved atlasRect=%d,%d %dx%d drawPath=managed-renderable",
-        context, equipment.getClass().getName(), equipment.getRegistryId(), x, y, flags,
-        icon.rect.x, icon.rect.y, icon.rect.w, icon.rect.h);
-    }
   }
 
   private static final class AtlasMetrics extends RenderableMetrics14 {

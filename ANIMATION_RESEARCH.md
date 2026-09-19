@@ -1,5 +1,7 @@
 # Steal action integration research
 
+> Historical research record. Development-only animation preview and probe tooling described by older notes has been removed from the v1.1.0 release candidate; this file is retained for implementation evidence.
+
 ## Native enemy stealing
 
 - Spring Hitter is retail monster ID 39; its patched combat script is `patches/scripts/DRGN1/40.diff`.

@@ -43,22 +43,6 @@ class StealResolverTest {
     assertTrue(state.hasAvailableResource());
   }
 
-  @Test void debugForceSuccessStillUsesRealAwardAndDepletionPath() {
-    final HeldResourceState state = new HeldResourceState(new HeldResource(HeldResource.ResourceType.GOLD, 20, 0));
-    final var result = resolver.resolveDetailed(state, 1, RandomGenerator.getDefault(), ignored -> true, true);
-    assertEquals(StealResolver.Outcome.SUCCESS, result.outcome());
-    assertEquals(-2, result.roll());
-    assertTrue(state.stolen());
-    assertFalse(state.hasAvailableResource());
-  }
-
-  @Test void debugForceSuccessDoesNotBypassCapacityFailure() {
-    final HeldResourceState state = new HeldResourceState(new HeldResource(HeldResource.ResourceType.ITEM, "item", 0));
-    final var result = resolver.resolveDetailed(state, 1, RandomGenerator.getDefault(), ignored -> false, true);
-    assertEquals(StealResolver.Outcome.INVENTORY_FULL, result.outcome());
-    assertTrue(state.hasAvailableResource());
-  }
-
   @Test void enemyInstancesAreIndependentAndBattleClearResetsEverything() {
     final EnemyHeldStateStore store = new EnemyHeldStateStore();
     final Object first = new Object();
@@ -74,12 +58,15 @@ class StealResolverTest {
     assertEquals(0, store.size());
   }
 
-  @Test void forcedHeldResourceIsDeterministicAndIdentityScoped() {
+  @Test void heldResourceIsIdentityScoped() {
     final EnemyHeldStateStore store = new EnemyHeldStateStore();
     final Object enemy = new Object();
     final HeldResource gold = new HeldResource(HeldResource.ResourceType.GOLD, 20, 100);
-    assertSame(gold, store.createForced(enemy, gold).resource());
+    final RandomGenerator alwaysHolding = new RandomGenerator() {
+      @Override public long nextLong() { return -1L; }
+    };
+    assertSame(gold, store.create(enemy, List.of(gold), 0, false, alwaysHolding).resource());
     assertSame(gold, store.get(enemy).resource());
-    assertThrows(IllegalStateException.class, () -> store.createForced(enemy, gold));
+    assertThrows(IllegalStateException.class, () -> store.create(enemy, List.of(gold), 0, false, alwaysHolding));
   }
 }

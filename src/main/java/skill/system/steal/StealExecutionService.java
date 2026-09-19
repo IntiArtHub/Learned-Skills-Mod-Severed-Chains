@@ -5,7 +5,6 @@ import legend.game.combat.bent.PlayerBattleEntity;
 import legend.game.inventory.Equipment;
 import legend.game.inventory.ItemStack;
 import skill.system.SkillSystemMod;
-import skill.system.SkillSystemDiagnostics;
 import skill.system.SkillSystemRuntime;
 import skill.system.api.MasteryChange;
 
@@ -23,7 +22,7 @@ public final class StealExecutionService {
     final int rank = SkillSystemRuntime.getSkillRank(player.character, SkillSystemRuntime.STEAL);
     final HeldResource resource = state.resource();
     final StealResolver.Resolution resolution = this.resolver.resolveDetailed(state, rank, SkillSystemMod.battleRng(),
-      this::award, SkillSystemDiagnostics.forceStealSuccess());
+      this::award);
     final MasteryChange mastery = resolution.outcome() == StealResolver.Outcome.SUCCESS
       ? SkillSystemRuntime.addSkillMastery(player.character, SkillSystemRuntime.STEAL, 1)
       : null;

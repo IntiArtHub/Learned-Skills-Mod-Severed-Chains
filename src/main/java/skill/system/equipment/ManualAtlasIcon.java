@@ -10,7 +10,6 @@ import legend.game.types.Renderable58;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.legendofdragoon.modloader.registries.RegistryId;
-import skill.system.SkillSystemDiagnostics;
 import skill.system.SkillSystemMod;
 
 import javax.imageio.ImageIO;
@@ -30,7 +29,18 @@ public final class ManualAtlasIcon {
     0
   );
 
-  private static final List<ManualAtlasIcon> ICONS = List.of(STEAL);
+  public static final ManualAtlasIcon BUFF_DANCE = new ManualAtlasIcon(
+    new RegistryId(SkillSystemMod.MOD_ID, "buff_dance_manual_icon"),
+    "/skill_system/ui/buff_dance_manual.png", -2, 0
+  );
+  public static final ManualAtlasIcon QUICKCHANGE = new ManualAtlasIcon(
+    new RegistryId(SkillSystemMod.MOD_ID, "quickchange_manual_icon"),
+    "/skill_system/ui/quickchange_manual.png", -2, 0
+  );
+  private static final ManualAtlasIcon[] STEAL_ACTION_FRAMES = actionFrames("steal_action", "hand");
+  private static final ManualAtlasIcon[] BUFF_DANCE_ACTION_FRAMES = actionFrames("buff_dance_action", "note");
+  private static final ManualAtlasIcon[] QUICKCHANGE_ACTION_FRAMES = actionFrames("quickchange_action", "arrows");
+  private static final List<ManualAtlasIcon> ICONS = buildIcons();
   private static final Logger LOGGER = LogManager.getFormatterLogger(ManualAtlasIcon.class);
 
   private final RegistryId id;
@@ -64,15 +74,47 @@ public final class ManualAtlasIcon {
   public QueuedModelStandard renderBattle(final MV transforms) {
     if(!battleDrawLogged) {
       battleDrawLogged = true;
-      SkillSystemDiagnostics.log(LOGGER, "Battle manual icon draw reached id=%s", this.id);
+      LOGGER.debug("Battle manual icon draw reached id=%s", this.id);
     }
     return icon().render(transforms);
+  }
+
+  public static QueuedModelStandard renderStealAction(final MV transforms, final int frame) {
+    return STEAL_ACTION_FRAMES[Math.floorMod(frame, STEAL_ACTION_FRAMES.length)].renderBattle(transforms);
+  }
+
+  public static QueuedModelStandard renderBuffDanceAction(final MV transforms, final int frame) {
+    return BUFF_DANCE_ACTION_FRAMES[Math.floorMod(frame, BUFF_DANCE_ACTION_FRAMES.length)].renderBattle(transforms);
+  }
+
+  public static QueuedModelStandard renderQuickchangeAction(final MV transforms, final int frame) {
+    return QUICKCHANGE_ACTION_FRAMES[Math.floorMod(frame, QUICKCHANGE_ACTION_FRAMES.length)].renderBattle(transforms);
+  }
+
+  private static ManualAtlasIcon[] actionFrames(final String prefix, final String shape) {
+    final ManualAtlasIcon[] frames = new ManualAtlasIcon[4];
+    for(int i = 0; i < frames.length; i++) {
+      frames[i] = new ManualAtlasIcon(new RegistryId(SkillSystemMod.MOD_ID, prefix + '_' + i),
+        "/skill_system/ui/" + prefix + '_' + i + ".png", 0, 0);
+    }
+    return frames;
+  }
+
+  private static List<ManualAtlasIcon> buildIcons() {
+    final java.util.ArrayList<ManualAtlasIcon> icons = new java.util.ArrayList<>();
+    icons.add(STEAL);
+    icons.add(BUFF_DANCE);
+    icons.add(QUICKCHANGE);
+    icons.addAll(List.of(STEAL_ACTION_FRAMES));
+    icons.addAll(List.of(BUFF_DANCE_ACTION_FRAMES));
+    icons.addAll(List.of(QUICKCHANGE_ACTION_FRAMES));
+    return List.copyOf(icons);
   }
 
   private void register(final RegisterAtlasTexturesEvent event) {
     final Image image = loadJarPng(this.resource);
     event.add(this.id, image);
-    SkillSystemDiagnostics.log(LOGGER, "Registered atlas image id=%s resource=%s dimensions=%dx%d",
+    LOGGER.debug("Registered atlas image id=%s resource=%s dimensions=%dx%d",
       this.id, this.resource, image.width, image.height);
   }
 
@@ -104,7 +146,7 @@ public final class ManualAtlasIcon {
     if(icon == null) throw new IllegalStateException("Missing packed atlas icon " + this.id);
     if(!lookupLogged) {
       lookupLogged = true;
-      SkillSystemDiagnostics.log(LOGGER, "Resolved atlas icon id=%s rectangle=%d,%d %dx%d",
+      LOGGER.debug("Resolved atlas icon id=%s rectangle=%d,%d %dx%d",
         this.id, icon.rect.x, icon.rect.y, icon.rect.w, icon.rect.h);
     }
     return icon;
