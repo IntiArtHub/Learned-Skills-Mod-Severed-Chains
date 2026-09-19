@@ -1,10 +1,8 @@
 Learned Skills Menu Addon exact engine baseline
 Official release tag: devbuild
-Commit: b69c397a2ccb6165e12480d13523840073f08a80
-Compiled version: 3.0.0-1739-devbuild
-Official Windows archive: Severed_Chains_Windows.zip
-Official Windows archive SHA-256: A2CBE418E45905AB4D2B80107ACD3618D018799233F62679C4C782DF98A5FA35
-Pristine engine: lod-game-b69c397a2ccb6165e12480d13523840073f08a80.jar
-Pristine engine SHA-256: 724ABAB2BCE535421C49CA7CD2C0202963378531B52AB2A659C46DA46F463F54
-Patched engine SHA-256: 35B2CEE771957A698D1194E24390EEE482B83DC096095F8DE7513E102231590F
+Commit: d3d4c02cbf1c74a4db39cfc10520431a6b8cc150
+Compiled version: 3.0.0-1780-devbuild
+Pristine engine: lod-game-d3d4c02cbf1c74a4db39cfc10520431a6b8cc150.jar
+Pristine engine SHA-256: C28FD4E861B400F4E5AC675AB9DD9D481248A393D98939A0C96023EB98CAA061
+Patched engine SHA-256: EAB4E369C4044EA2D8A930EC520476A93C0A269947F15B694A8A4A4E78BE2FD8
 Patch scope: generic More menu event/screen, MainMenuScreen hook, localisation, focused tests, exact compiled metadata.

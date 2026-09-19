@@ -16,7 +16,7 @@
 - Successful use awards one mastery per character/skill on qualifying victory while alive; equipped manual is consumed at maximum mastery and then grants permanent access.
 - Forest vendor sells the light-blue Buff Dance Manual for 20G. Steal remains independent.
 - Custom four-frame battle icon, bounded dance animation and blue party effect are implemented; no healing behaviour is coupled to the visual effect.
-- Menu Addon lists Buff Dance correctly and supports the current private 1779 test core.
+- Menu Addon lists Buff Dance correctly and has been rebuilt for the exact private 1780 test engine.
 
 Quickchange uses a green closed-book Manual icon. Rank-scaled 1/2/3/unlimited battle uses and the victory/alive mastery flow are accepted in current testing; Manual consumption still needs testing after the next game progression. Completion plays animation 3, then animation 31 for eight ticks, then restores the prior animation.
 

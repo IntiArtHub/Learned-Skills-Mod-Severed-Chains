@@ -14,7 +14,7 @@ The framework keeps ability logic modular. Where the architecture permits, a dev
 
 Done. This supplies the complete gameplay system and requires no engine replacement.
 
-**Tested in Severed Chains `3.0.0-1779-devbuild`.** The core also passes a stock-engine compile/linkage check. The v1.1.0 candidate has not been published. Ordinary upstream updates may remain compatible unless they change APIs or behaviour used by the mod.
+**Tested in Severed Chains `3.0.0-1780-devbuild`.** The core also passes a stock-engine compile/linkage check. The v1.1.0 candidate has not been published. Ordinary upstream updates may remain compatible unless they change APIs or behaviour used by the mod.
 
 ## First bundled skill: Steal
 
@@ -35,7 +35,7 @@ The Forest vendor keeps its normal stock and sells all three Skill Manuals. Bast
 The optional Menu Addon adds **Main Menu â†’ More â†’ Skills**, showing exact mastery progress, rank, **Learning now**, **Not learning**, **MASTERED**, and each Skill Effect. It appears as a separate mod; enable both **Learned Skills** and **Learned Skills Menu Addon**. The core gameplay mod works fully without it.
 
 > [!WARNING]
-> The private Menu Addon test kit is tied to Severed Chains `3.0.0-1779-devbuild`, commit `b2a49e4df549b1941b1c5af45d0d150f27c2dc4e`. Do **not** update Severed Chains while it is installed. Uninstall the Menu Addon **before** updating Severed Chains.
+> The private Menu Addon test kit is tied to Severed Chains `3.0.0-1780-devbuild`, commit `d3d4c02cbf1c74a4db39cfc10520431a6b8cc150`. Do **not** update Severed Chains while it is installed. Uninstall the Menu Addon **before** updating Severed Chains.
 
 The addon replaces one core engine JAR; standard Learned Skills does not. QoL+ and other modified engine distributions may conflict. Its installer verifies all relevant hashes and refuses unknown engines. Its uninstaller will not blindly restore an obsolete engine if another update changed the active engine after installation.
 
@@ -43,7 +43,7 @@ Read [menu-addon/README.md](menu-addon/README.md) before installing it.
 
 ## Compatibility
 
-The standard JAR uses normal Severed Chains mod-loader APIs and is not permanently locked to build 1779. Recheck compatibility after upstream changes. QoL+ and other engine forks are untested with the standard JAR.
+The standard JAR uses normal Severed Chains mod-loader APIs and is not permanently locked to build 1780. Recheck compatibility after upstream changes. QoL+ and other engine forks are untested with the standard JAR.
 
 The Menu Addon is exact-build locked and must not be installed over QoL+, another fork, or any already modified engine.
 
@@ -58,11 +58,11 @@ Internal registry and save identifiers remain under `skill_system` for compatibi
 - [Animation research](ANIMATION_RESEARCH.md)
 - [UI extension research](UI_EXTENSION_RESEARCH.md)
 
-The optional 1779 Menu Addon source is retained in the private test kit. No v1.1.0 GitHub publication has been made.
+The optional 1780 Menu Addon source is retained in the private test kit. No v1.1.0 GitHub publication has been made.
 
 ### Build prerequisites
 
-JDK 25 and locally obtained Severed Chains engine JARs/libraries are required for compilation. The core currently compiles against the stock 1739 API baseline and has been tested in 1779. Copy `gradle.properties.example` to `gradle.properties` and set the local engine JAR/library paths. These runtime dependencies are intentionally not committed, so a GitHub Actions workflow is not supplied.
+JDK 25 and locally obtained Severed Chains engine JARs/libraries are required for compilation. The core currently compiles against the stock 1739 API baseline and has also passed its complete build and compatibility checks against 1780. Copy `gradle.properties.example` to `gradle.properties` and set the local engine JAR/library paths. These runtime dependencies are intentionally not committed, so a GitHub Actions workflow is not supplied.
 
 Run `gradle :check` for the stock-compatible core. The optional addon additionally requires the exact patched engine JAR through `menuAddonEngineJar`; run `gradle :menu-addon:check -PmenuAddonEngineJar=<path>` against the matching build.
 

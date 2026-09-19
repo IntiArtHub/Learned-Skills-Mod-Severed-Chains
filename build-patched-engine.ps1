@@ -4,13 +4,13 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$commit = 'b69c397a2ccb6165e12480d13523840073f08a80'
-$expectedVersion = '3.0.0-1739-devbuild'
+$commit = 'd3d4c02cbf1c74a4db39cfc10520431a6b8cc150'
+$expectedVersion = '3.0.0-1780-devbuild'
 if([string]::IsNullOrWhiteSpace($JavaHome)) { throw 'Provide -JavaHome or set JAVA_HOME to JDK 25.' }
 $worktree = (Resolve-Path -LiteralPath $EngineWorktree).Path
 $versionSource = Join-Path $worktree 'src\main\java\legend\core\Version.java'
 $source = Get-Content -Raw -LiteralPath $versionSource
-if($source -match 'SNAPSHOT-CHANNEL|BUILD = "SNAPSHOT"|CHANNEL = "CHANNEL"|HASH = "COMMIT"' -or $source -notmatch 'BUILD = "1739"' -or $source -notmatch 'CHANNEL = "devbuild"') {
+if($source -match 'SNAPSHOT-CHANNEL|BUILD = "SNAPSHOT"|CHANNEL = "CHANNEL"|HASH = "COMMIT"' -or $source -notmatch 'BUILD = "1780"' -or $source -notmatch [regex]::Escape("HASH = `"$commit`"") -or $source -notmatch 'CHANNEL = "devbuild"') {
   throw "Version.java is not prepared for $expectedVersion; refusing to build a deployable engine."
 }
 

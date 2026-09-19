@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'skill_system'
-version = '1.0.0'
+version = '1.1.0'
 
 java {
   sourceCompatibility = targetCompatibility = JavaVersion.VERSION_25
@@ -11,9 +11,9 @@ java {
 
 compileJava.options.encoding = 'UTF-8'
 
-def defaultPatchedEngine = rootProject.file('build/patched-engine/lod-game-b69c397a2ccb6165e12480d13523840073f08a80.jar')
+def defaultPatchedEngine = rootProject.file('build/patched-engine/lod-game-d3d4c02cbf1c74a4db39cfc10520431a6b8cc150.jar')
 def patchedEngineJar = providers.gradleProperty('menuAddonEngineJar').getOrElse(defaultPatchedEngine.path)
-def learnedSkillsEngineLibDir = providers.gradleProperty('learnedSkillsEngineLibDir').getOrElse(rootProject.file('.upstream/stock-b69c397a/libs').path)
+def learnedSkillsEngineLibDir = providers.gradleProperty('learnedSkillsEngineLibDir').getOrElse(rootProject.file('.upstream/stock-d3d4c02/libs').path)
 
 dependencies {
   compileOnly files(patchedEngineJar)

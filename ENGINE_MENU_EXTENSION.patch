@@ -1,8 +1,8 @@
 diff --git a/build.gradle b/build.gradle
-index 9970ee222..e0296c58a 100644
+index 1ab51085b..a8f77f8f7 100644
 --- a/build.gradle
 +++ b/build.gradle
-@@ -291,6 +291,13 @@ test {
+@@ -293,6 +293,13 @@ test {
    exclude '**/*'
  }
  
@@ -17,31 +17,26 @@ index 9970ee222..e0296c58a 100644
    main {
      java {
 diff --git a/src/main/java/legend/core/Version.java b/src/main/java/legend/core/Version.java
-index b4813347e..7c6aae5e6 100644
+index b4813347e..14863adfd 100644
 --- a/src/main/java/legend/core/Version.java
 +++ b/src/main/java/legend/core/Version.java
-@@ -9,15 +9,15 @@ public final class Version {
+@@ -9,12 +9,12 @@ public final class Version {
    public static final String MAJOR = "3";
    public static final String MINOR = "0";
    public static final String REVISION = "0";
 -  public static final String BUILD = "SNAPSHOT";
 -  public static final String HASH = "COMMIT";
 -  public static final String CHANNEL = "CHANNEL";
-+  public static final String BUILD = "1739";
-+  public static final String HASH = "b69c397a2ccb6165e12480d13523840073f08a80";
++  public static final String BUILD = "1780";
++  public static final String HASH = "d3d4c02cbf1c74a4db39cfc10520431a6b8cc150";
 +  public static final String CHANNEL = "devbuild";
    public static final String VERSION = MAJOR + '.' + MINOR + '.' + REVISION;
    public static final String FULL_VERSION = VERSION + '-' + BUILD + '-' + CHANNEL;
 -  public static final ZonedDateTime TIMESTAMP = null;
-+  public static final ZonedDateTime TIMESTAMP = ZonedDateTime.parse("2026-09-01T23:37:43+00:00");
++  public static final ZonedDateTime TIMESTAMP = ZonedDateTime.parse("2026-09-18T23:37:29+00:00");
  
    public static boolean isMac() {
      final String os = System.getProperty("os.name").toLowerCase(Locale.US);
-     return os.contains("mac os x") || os.contains("darwin") || os.contains("osx");
-   }
--}
-+}
-\ No newline at end of file
 diff --git a/src/main/java/legend/game/inventory/screens/ExtensionMenuScreen.java b/src/main/java/legend/game/inventory/screens/ExtensionMenuScreen.java
 new file mode 100644
 index 000000000..e1ee89d52
@@ -135,7 +130,7 @@ index 000000000..e1ee89d52
 +  }
 +}
 diff --git a/src/main/java/legend/game/inventory/screens/MainMenuScreen.java b/src/main/java/legend/game/inventory/screens/MainMenuScreen.java
-index a26f65b7c..89168ba40 100644
+index 2053b2ce6..8ab43d6dc 100644
 --- a/src/main/java/legend/game/inventory/screens/MainMenuScreen.java
 +++ b/src/main/java/legend/game/inventory/screens/MainMenuScreen.java
 @@ -11,6 +11,8 @@ import legend.game.inventory.screens.controls.Button;
@@ -212,7 +207,7 @@ index a26f65b7c..89168ba40 100644
      button.setWidth(72);
  
      button.onHoverIn(button::focus);
-@@ -513,6 +532,14 @@ public class MainMenuScreen extends MenuScreen {
+@@ -521,6 +540,14 @@ public class MainMenuScreen extends MenuScreen {
      }
    }
  
@@ -302,10 +297,10 @@ index 000000000..4bfe98b8e
 +
 +import javax.annotation.ParametersAreNonnullByDefault;
 diff --git a/src/main/resources/lod_core/lang/en.lang b/src/main/resources/lod_core/lang/en.lang
-index 4d98246c8..4fff99ff4 100644
+index 4d474733c..e3c72f75f 100644
 --- a/src/main/resources/lod_core/lang/en.lang
 +++ b/src/main/resources/lod_core/lang/en.lang
-@@ -13,6 +13,8 @@ lod_core.config.category.other.label=Other
+@@ -23,6 +23,8 @@ lod_core.config_presets.speedrunner=Speedrunner
  
  # UI text
  lod_core.ui.hotkey=%s (%s)
@@ -314,7 +309,7 @@ index 4d98246c8..4fff99ff4 100644
  
  lod_core.ui.title.uncategorized_saves=Uncategorized saves found. Please enter a name for your campaign.
  lod_core.ui.title.campaign_name=Campaign name:
-@@ -162,6 +164,7 @@ lod_core.ui.ingame_menu.status=Status
+@@ -190,6 +192,7 @@ lod_core.ui.ingame_menu.status=Status
  lod_core.ui.ingame_menu.additions=Additions
  lod_core.ui.ingame_menu.replace=Replace
  lod_core.ui.ingame_menu.options=Options

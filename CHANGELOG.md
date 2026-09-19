@@ -9,7 +9,8 @@
 - Added the v1.1 menu icon spacing and layering adjustments; final spacing and animation cleanup still need a last visual retest.
 - Removed hidden Quickchange probes, the animation preview action, and test property overrides from the release candidate.
 - Reduced Forest vendor test stock to the Bastard Sword at 30G; Broad Sword is ATK 2 and Bastard Sword is ATK 7 in the current test data.
-- The candidate is built for Severed Chains 3.0.0-1779-devbuild and has not been published.
+- Revalidated the core against Severed Chains 3.0.0-1780-devbuild and ported the exact-build Menu Addon engine extension to commit `d3d4c02cbf1c74a4db39cfc10520431a6b8cc150`.
+- The candidate has not been published.
 
 ## 1.0.0
 

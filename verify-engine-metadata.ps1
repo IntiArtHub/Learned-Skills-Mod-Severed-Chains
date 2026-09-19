@@ -4,8 +4,8 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$expectedVersion = '3.0.0-1739-devbuild'
-$expectedHash = 'b69c397a2ccb6165e12480d13523840073f08a80'
+$expectedVersion = '3.0.0-1780-devbuild'
+$expectedHash = 'd3d4c02cbf1c74a4db39cfc10520431a6b8cc150'
 if([string]::IsNullOrWhiteSpace($JavaHome)) { throw 'Provide -JavaHome or set JAVA_HOME to JDK 25.' }
 $jar = (Resolve-Path -LiteralPath $EngineJar).Path
 $javap = Join-Path $JavaHome 'bin\javap.exe'
